@@ -10,7 +10,16 @@ import {
   type Plan,
   type PlatformConfig,
 } from "@/lib/platform-config";
-1.8
+
+function Logo({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <span className="block text-2xl font-bold tracking-tight">Felipe Alvim</span>
+      <span className="block text-sm uppercase tracking-[0.35em] text-white/60">Nutri</span>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/oferta")({
   head: () => ({
     meta: [
