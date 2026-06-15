@@ -1,6 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { loadConfig, saveAccess, fetchConfigFromSupabase } from "@/lib/platform-config";
+import {
+  loadConfig,
+  saveAccess,
+  fetchConfigFromSupabase,
+  saveConfigToSupabase,
+} from "@/lib/platform-config";
 import { Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/$keyword")({
@@ -32,17 +37,17 @@ function KeywordValidationPage() {
       }
 
       try {
-        const cfg = await fetchConfigFromSupabase();
+        const dbCfg = await fetchConfigFromSupabase();
         let ok = false;
         let token = "";
         let slotsRemaining: number | undefined;
 
-        if (cfg.accessWebhookUrl) {
+        if (dbCfg.accessWebhookUrl) {
           setStatus("Verificando credenciais de acesso...");
-          const res = await fetch(cfg.accessWebhookUrl, {
+          const res = await fetch(dbCfg.accessWebhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ palavra: keyword.trim() }),
+            body: JSON.stringify({ palavra: keyword.trim(), vagas: dbCfg.totalSlots }),
           });
           const data = await res.json();
           ok = !!data?.ok;
@@ -50,16 +55,24 @@ function KeywordValidationPage() {
           slotsRemaining = data?.slotsRemaining ?? data?.vagas ?? data?.slots;
         } else {
           // Fallback local: compara com a palavra-chave configurada
-          ok = !!cfg.keyword && keyword.trim().toLowerCase() === cfg.keyword.trim().toLowerCase();
+          ok =
+            !!dbCfg.keyword && keyword.trim().toLowerCase() === dbCfg.keyword.trim().toLowerCase();
           token = ok ? "slug-" + Date.now() : "";
-          slotsRemaining = cfg.totalSlots;
+          slotsRemaining = dbCfg.totalSlots;
         }
 
         if (ok) {
           setStatus("Acesso concedido! Redirecionando...");
+
+          // Reduz em 1 as vagas e salva no banco de dados para criar escassez real cooperativa
+          const nextSlots = Math.max(0, dbCfg.totalSlots - 1);
+          dbCfg.totalSlots = nextSlots;
+          await saveConfigToSupabase(dbCfg);
+
           saveAccess({
             token: token || "slug-auto-" + Date.now(),
-            slotsRemaining,
+            slotsRemaining:
+              slotsRemaining !== undefined ? Math.max(0, slotsRemaining - 1) : nextSlots,
           });
           // Pequeno delay para efeito visual refinado
           setTimeout(() => {

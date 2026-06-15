@@ -4,6 +4,7 @@ import {
   loadConfig,
   saveAccess,
   fetchConfigFromSupabase,
+  saveConfigToSupabase,
   type PlatformConfig,
 } from "@/lib/platform-config";
 import { LockKeyhole, Sparkles, UserCheck, Flame } from "lucide-react";
@@ -56,16 +57,16 @@ function EntryPage() {
     setError(null);
     setLoading(true);
     try {
-      const cfg = await fetchConfigFromSupabase();
+      const dbCfg = await fetchConfigFromSupabase();
       let ok = false;
       let token = "";
       let slotsRemaining: number | undefined;
 
-      if (cfg.accessWebhookUrl) {
-        const res = await fetch(cfg.accessWebhookUrl, {
+      if (dbCfg.accessWebhookUrl) {
+        const res = await fetch(dbCfg.accessWebhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ palavra: palavra.trim() }),
+          body: JSON.stringify({ palavra: palavra.trim(), vagas: dbCfg.totalSlots }),
         });
         const data = await res.json();
         ok = !!data?.ok;
@@ -73,15 +74,21 @@ function EntryPage() {
         slotsRemaining = data?.slotsRemaining ?? data?.vagas ?? data?.slots;
       } else {
         // Fallback local: compara com a palavra-chave configurada
-        ok = !!cfg.keyword && palavra.trim().toLowerCase() === cfg.keyword.trim().toLowerCase();
+        ok = !!dbCfg.keyword && palavra.trim().toLowerCase() === dbCfg.keyword.trim().toLowerCase();
         token = ok ? "local-" + Date.now() : "";
-        slotsRemaining = cfg.totalSlots;
+        slotsRemaining = dbCfg.totalSlots;
       }
 
       if (ok) {
+        // Reduz em 1 as vagas e salva no banco de dados para criar escassez real cooperativa
+        const nextSlots = Math.max(0, dbCfg.totalSlots - 1);
+        dbCfg.totalSlots = nextSlots;
+        await saveConfigToSupabase(dbCfg);
+
         saveAccess({
           token: token || "local-auto-" + Date.now(),
-          slotsRemaining,
+          slotsRemaining:
+            slotsRemaining !== undefined ? Math.max(0, slotsRemaining - 1) : nextSlots,
         });
         navigate({ to: "/oferta" });
       } else {
@@ -155,25 +162,38 @@ function EntryPage() {
             </div>
 
             <p className="mt-2 text-sm font-medium text-white/90">
-              Restam apenas{" "}
-              <span className="text-gold font-bold text-lg px-0.5 animate-pulse">
-                {slots > 3 ? 3 : slots} vagas
-              </span>{" "}
-              disponíveis esta semana!
+              {slots > 0 ? (
+                <>
+                  Restam apenas{" "}
+                  <span className="text-gold font-bold text-lg px-0.5 animate-pulse">
+                    {slots} {slots === 1 ? "vaga" : "vagas"}
+                  </span>{" "}
+                  disponíveis esta semana!
+                </>
+              ) : (
+                <span className="text-rose-400 font-bold">
+                  Vagas esgotadas para esta semana! Fila de espera ativa.
+                </span>
+              )}
             </p>
 
             {/* Gold premium progress bar */}
             <div className="mt-4 w-full bg-black/40 h-3 rounded-full p-[2px] border border-white/5 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
-                style={{ width: `${((slots > 3 ? 10 - 3 : 10 - slots) / 10) * 100}%` }}
+                style={{
+                  width: `${Math.max(
+                    0,
+                    Math.min(100, (1 - slots / Math.max(slots ?? 10, 10)) * 100),
+                  )}%`,
+                }}
               />
             </div>
             <div className="mt-2 flex justify-between text-[11px] text-white/45 px-0.5 font-mono">
               <span className="font-semibold text-amber-500/90">
-                {slots > 3 ? 10 - 3 : 10 - slots} preenchidas
+                {Math.max(0, Math.max(slots ?? 10, 10) - slots)} preenchidas
               </span>
-              <span>Apenas {slots > 3 ? 3 : slots} restantes</span>
+              <span>Apenas {slots} restantes</span>
             </div>
           </div>
         )}
