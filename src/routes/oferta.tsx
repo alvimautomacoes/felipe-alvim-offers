@@ -10,8 +10,7 @@ import {
   type Plan,
   type PlatformConfig,
 } from "@/lib/platform-config";
-import { Logo } from "@/components/Logo";
-
+1.8
 export const Route = createFileRoute("/oferta")({
   head: () => ({
     meta: [

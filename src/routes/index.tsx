@@ -7,8 +7,7 @@ import {
   saveConfigToSupabase,
   type PlatformConfig,
 } from "@/lib/platform-config";
-import { LockKeyhole, Sparkles, UserCheck, Flame } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import { UserCheck, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
