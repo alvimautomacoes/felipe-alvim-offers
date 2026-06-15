@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { loadConfig, saveOffer } from "@/lib/platform-config";
+import { loadConfig, saveAccess } from "@/lib/platform-config";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,27 +22,31 @@ function EntryPage() {
     e.preventDefault();
     setError(null);
     const cfg = loadConfig();
-    if (!cfg.accessWebhookUrl) {
-      setError("Plataforma ainda não configurada.");
-      return;
-    }
     setLoading(true);
     try {
-      const res = await fetch(cfg.accessWebhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ palavra: palavra.trim() }),
-      });
-      const data = await res.json();
-      if (data?.ok && data?.token) {
-        saveOffer({
-          token: data.token,
-          title: data.title,
-          description: data.description,
-          price: data.price,
-          ctaLink: data.ctaLink,
-          slotsRemaining: data.slotsRemaining,
+      let ok = false;
+      let token = "";
+      let slotsRemaining: number | undefined;
+
+      if (cfg.accessWebhookUrl) {
+        const res = await fetch(cfg.accessWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ palavra: palavra.trim() }),
         });
+        const data = await res.json();
+        ok = !!data?.ok;
+        token = data?.token ?? "";
+        slotsRemaining = data?.slotsRemaining;
+      } else {
+        // Fallback local: compara com a palavra-chave configurada
+        ok = !!cfg.keyword && palavra.trim().toLowerCase() === cfg.keyword.trim().toLowerCase();
+        token = ok ? "local-" + Date.now() : "";
+        slotsRemaining = cfg.totalSlots;
+      }
+
+      if (ok && token) {
+        saveAccess({ token, slotsRemaining });
         navigate({ to: "/oferta" });
       } else {
         setError("Palavra-chave inválida");
