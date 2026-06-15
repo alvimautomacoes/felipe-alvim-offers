@@ -58,8 +58,11 @@ function EntryPage() {
         slotsRemaining = cfg.totalSlots;
       }
 
-      if (ok && token) {
-        saveAccess({ token, slotsRemaining });
+      if (ok) {
+        saveAccess({
+          token: token || "local-auto-" + Date.now(),
+          slotsRemaining,
+        });
         navigate({ to: "/oferta" });
       } else {
         setError("Chave secreta inválida. Verifique e tente novamente.");
