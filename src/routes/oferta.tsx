@@ -149,20 +149,28 @@ function OfferPage() {
                 }}
               >
                 <div
-                  className="relative h-full rounded-[calc(theme(borderRadius.3xl)-1px)] p-7 flex flex-col"
+                  className="relative h-full rounded-[calc(theme(borderRadius.3xl)-1px)] p-7 flex flex-col overflow-hidden"
                   style={{ background: "var(--noir-soft)" }}
                 >
-                  {plan.badge && (
-                    <span
-                      className="self-start text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full border"
-                      style={{
-                        borderColor: "color-mix(in oklab, var(--gold) 50%, transparent)",
-                        color: "var(--gold-soft)",
-                        background: "color-mix(in oklab, var(--gold) 10%, transparent)",
-                      }}
-                    >
-                      {plan.badge}
-                    </span>
+                  {plan.highlighted ? (
+                    <div className="absolute top-0 right-0 overflow-hidden w-28 h-28 pointer-events-none z-10">
+                      <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-600 to-amber-400 text-neutral-950 font-extrabold text-[9px] uppercase tracking-widest text-center py-2 w-[150%] translate-x-[32%] translate-y-[22%] rotate-45 shadow-[0_2px_8px_rgba(0,0,0,0.5)] border-y border-amber-300/30">
+                        {plan.badge || "Mais Vendido"}
+                      </div>
+                    </div>
+                  ) : (
+                    plan.badge && (
+                      <span
+                        className="self-start text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full border"
+                        style={{
+                          borderColor: "color-mix(in oklab, var(--gold) 50%, transparent)",
+                          color: "var(--gold-soft)",
+                          background: "color-mix(in oklab, var(--gold) 10%, transparent)",
+                        }}
+                      >
+                        {plan.badge}
+                      </span>
+                    )
                   )}
                   <h3 className="font-display mt-5 text-2xl font-semibold text-white">
                     {plan.name}
