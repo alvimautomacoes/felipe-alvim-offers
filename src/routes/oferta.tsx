@@ -11,7 +11,7 @@ import {
   type PlatformConfig,
 } from "@/lib/platform-config";
 
-import { Logo } from "@/components/Logo";
+import { Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/oferta")({
   head: () => ({
@@ -102,8 +102,10 @@ function OfferPage() {
 
       <div className="relative max-w-6xl mx-auto px-5 py-12 md:py-20">
         {/* Header */}
-        <header className="text-center max-w-2xl mx-auto animate-fade-up">
-          <Logo className="h-20 mb-8 mx-auto" />
+        <header className="text-center max-w-2xl mx-auto animate-fade-up flex flex-col items-center">
+          <div className="p-3.5 rounded-full bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)] mb-6 animate-fade-in text-amber-400">
+            <Sparkles className="h-8 w-8" />
+          </div>
 
           <div
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border"

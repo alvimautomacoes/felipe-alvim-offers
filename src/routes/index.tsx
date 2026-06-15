@@ -8,7 +8,6 @@ import {
   type PlatformConfig,
 } from "@/lib/platform-config";
 import { LockKeyhole, Sparkles, UserCheck, Flame } from "lucide-react";
-import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -132,10 +131,12 @@ function EntryPage() {
 
       <div className="relative w-full max-w-md z-10 animate-fade-up">
         {/* Brand Logo Integration */}
-        <div className="text-center mb-8">
-          <Logo className="h-20 mb-6 mx-auto animate-fade-in" />
+        <div className="text-center mb-8 flex flex-col items-center justify-center">
+          <div className="p-3.5 rounded-full bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)] mb-4 animate-fade-in text-amber-400">
+            <Sparkles className="h-8 w-8" />
+          </div>
 
-          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-white mt-4">
+          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-white mt-2">
             Acesso <span className="text-gold-gradient">Reservado</span>
           </h1>
           <p className="mt-2 text-sm text-white/60 leading-relaxed max-w-sm mx-auto">
