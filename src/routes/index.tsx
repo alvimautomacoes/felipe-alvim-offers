@@ -1,7 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { loadConfig, saveAccess, fetchConfigFromSupabase } from "@/lib/platform-config";
-import { LockKeyhole, Sparkles, UserCheck } from "lucide-react";
+import {
+  loadConfig,
+  saveAccess,
+  fetchConfigFromSupabase,
+  type PlatformConfig,
+} from "@/lib/platform-config";
+import { LockKeyhole, Sparkles, UserCheck, Flame } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,9 +28,22 @@ function EntryPage() {
   const [palavra, setPalavra] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cfg, setCfg] = useState<PlatformConfig | null>(null);
+  const [slots, setSlots] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchConfigFromSupabase();
+    async function load() {
+      try {
+        const live = await fetchConfigFromSupabase();
+        setCfg(live);
+        setSlots(live.totalSlots || 10);
+      } catch {
+        const local = loadConfig();
+        setCfg(local);
+        setSlots(local.totalSlots || 10);
+      }
+    }
+    load();
     const redirectErr = sessionStorage.getItem("fa_entry_error");
     if (redirectErr) {
       setError(redirectErr);
@@ -105,31 +124,59 @@ function EntryPage() {
       />
 
       <div className="relative w-full max-w-md z-10 animate-fade-up">
-        {/* Header content with luxury vibes */}
+        {/* Brand Logo Integration */}
         <div className="text-center mb-8">
-          <div
-            className="inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-5 border relative"
-            style={{
-              borderColor: "color-mix(in oklab, var(--gold) 40%, transparent)",
-              background: "var(--noir-soft)",
-              boxShadow: "var(--shadow-gold)",
-            }}
-          >
-            <LockKeyhole className="h-6 w-6 text-gold-soft" style={{ color: "var(--gold-soft)" }} />
-            <Sparkles
-              className="h-4 w-4 absolute -top-1.5 -right-1.5 text-gold animate-pulse"
-              style={{ color: "var(--gold)" }}
-            />
-          </div>
+          <Logo className="h-20 mb-6 mx-auto animate-fade-in" />
 
-          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-gold-gradient">
-            Acesso Reservado
+          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-white mt-4">
+            Acesso <span className="text-gold-gradient">Reservado</span>
           </h1>
-          <p className="mt-3 text-sm text-white/70 leading-relaxed max-w-sm mx-auto">
+          <p className="mt-2 text-sm text-white/60 leading-relaxed max-w-sm mx-auto">
             Insira o código secreto recebido na sua conversa privada para liberar seus benefícios de
             acompanhamento exclusivo.
           </p>
         </div>
+
+        {/* Modern Urgency Widget */}
+        {slots !== null && (
+          <div className="mb-6 bg-gradient-to-br from-amber-500/10 to-amber-600/5 hover:from-amber-500/15 border border-amber-500/25 rounded-3xl p-5 text-center backdrop-blur-md relative overflow-hidden shadow-[0_8px_32px_0_rgba(197,160,89,0.1)] animate-[pulse_3s_infinite_ease-in-out]">
+            {/* Ambient background glow and pattern */}
+            <div className="absolute -left-12 -top-12 w-28 h-28 rounded-full bg-amber-500/10 blur-xl pointer-events-none" />
+            <div className="absolute right-3 top-3 opacity-15">
+              <Flame className="h-10 w-10 text-amber-500" />
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs font-bold uppercase tracking-widest">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span>INSCRIÇÕES ALTAMENTE LIMITADAS</span>
+            </div>
+
+            <p className="mt-2 text-sm font-medium text-white/90">
+              Restam apenas{" "}
+              <span className="text-gold font-bold text-lg px-0.5 animate-pulse">
+                {slots > 3 ? 3 : slots} vagas
+              </span>{" "}
+              disponíveis esta semana!
+            </p>
+
+            {/* Gold premium progress bar */}
+            <div className="mt-4 w-full bg-black/40 h-3 rounded-full p-[2px] border border-white/5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                style={{ width: `${((slots > 3 ? 10 - 3 : 10 - slots) / 10) * 100}%` }}
+              />
+            </div>
+            <div className="mt-2 flex justify-between text-[11px] text-white/45 px-0.5 font-mono">
+              <span className="font-semibold text-amber-500/90">
+                {slots > 3 ? 10 - 3 : 10 - slots} preenchidas
+              </span>
+              <span>Apenas {slots > 3 ? 3 : slots} restantes</span>
+            </div>
+          </div>
+        )}
 
         {/* Form Container */}
         <div

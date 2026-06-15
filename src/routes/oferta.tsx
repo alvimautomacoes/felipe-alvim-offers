@@ -10,6 +10,7 @@ import {
   type Plan,
   type PlatformConfig,
 } from "@/lib/platform-config";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/oferta")({
   head: () => ({
@@ -101,6 +102,8 @@ function OfferPage() {
       <div className="relative max-w-6xl mx-auto px-5 py-12 md:py-20">
         {/* Header */}
         <header className="text-center max-w-2xl mx-auto animate-fade-up">
+          <Logo className="h-20 mb-8 mx-auto" />
+
           <div
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border"
             style={{
@@ -163,15 +166,27 @@ function OfferPage() {
                     {plan.description}
                   </p>
 
-                  <div className="mt-6 flex items-baseline gap-3">
-                    <span className="font-display text-4xl font-semibold text-gold-gradient">
-                      {plan.price}
-                    </span>
+                  <div className="mt-6 flex flex-col gap-1">
                     {plan.originalPrice && (
-                      <span className="text-sm text-white/40 line-through">
-                        {plan.originalPrice}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/20 line-through decoration-rose-500 decoration-2">
+                          De {plan.originalPrice}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/45 uppercase tracking-widest font-semibold">
+                          Por apenas
+                        </span>
+                      </div>
                     )}
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display text-5xl font-extrabold text-gold-gradient tracking-tight">
+                        {plan.price}
+                      </span>
+                      {plan.originalPrice && (
+                        <span className="text-[9px] bg-emerald-500/15 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.15)]">
+                          Desconto
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <ul className="mt-6 space-y-3 flex-1">
