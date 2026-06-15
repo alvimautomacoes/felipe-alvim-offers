@@ -43,13 +43,13 @@ function OfferPage() {
     // Attempt local load first to avoid any visual flicker while Supabase fetches
     const initialConfig = loadConfig();
     setCfg(initialConfig);
-    setSlots(access.slotsRemaining ?? initialConfig.totalSlots);
+    setSlots(initialConfig.totalSlots);
 
     // Fetch and sync newest settings from live DB
     async function syncDb() {
       const dbConfig = await fetchConfigFromSupabase();
       setCfg(dbConfig);
-      setSlots(access.slotsRemaining ?? dbConfig.totalSlots);
+      setSlots(dbConfig.totalSlots);
     }
     syncDb();
   }, [navigate]);
@@ -323,3 +323,4 @@ function OfferPage() {
     </main>
   );
 }
+3.2
