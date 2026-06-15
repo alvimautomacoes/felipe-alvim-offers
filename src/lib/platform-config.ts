@@ -1,3 +1,5 @@
+import { supabase, isSupabaseConfigured } from "./supabase";
+
 export type Plan = {
   id: string;
   name: string;
@@ -8,6 +10,7 @@ export type Plan = {
   features: string[];
   whatsappMessage: string; // supports {nome} and {plano}
 };
+
 
 export type PlatformConfig = {
   accessWebhookUrl: string;
@@ -30,7 +33,8 @@ export const defaultConfig: PlatformConfig = {
   keyword: "",
   whatsappNumber: "5561992939930",
   offerHeadline: "Sua condição exclusiva foi liberada",
-  offerSubheadline: "Escolha o plano de acompanhamento ideal e garanta o desconto especial enquanto há vagas.",
+  offerSubheadline:
+    "Escolha o plano de acompanhamento ideal e garanta o desconto especial enquanto há vagas.",
   totalSlots: 10,
   plans: [
     {
@@ -61,8 +65,7 @@ export const defaultConfig: PlatformConfig = {
         "Suporte direto via WhatsApp",
         "Lista de substituições inteligentes",
       ],
-      whatsappMessage:
-        "Olá Felipe! Sou {nome} e quero garantir o desconto no plano {plano}.",
+      whatsappMessage: "Olá Felipe! Sou {nome} e quero garantir o desconto no plano {plano}.",
     },
     {
       id: "elite",
@@ -78,8 +81,7 @@ export const defaultConfig: PlatformConfig = {
         "Estratégia de suplementação",
         "Acesso direto 7 dias por semana",
       ],
-      whatsappMessage:
-        "Olá Felipe! Aqui é {nome}, quero garantir minha vaga no plano {plano}.",
+      whatsappMessage: "Olá Felipe! Aqui é {nome}, quero garantir minha vaga no plano {plano}.",
     },
   ],
 };
@@ -93,7 +95,8 @@ export function loadConfig(): PlatformConfig {
     return {
       ...defaultConfig,
       ...parsed,
-      plans: Array.isArray(parsed.plans) && parsed.plans.length > 0 ? parsed.plans : defaultConfig.plans,
+      plans:
+        Array.isArray(parsed.plans) && parsed.plans.length > 0 ? parsed.plans : defaultConfig.plans,
     };
   } catch {
     return defaultConfig;
@@ -103,6 +106,75 @@ export function loadConfig(): PlatformConfig {
 export function saveConfig(cfg: PlatformConfig) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
 }
+
+export async function fetchConfigFromSupabase(): Promise<PlatformConfig> {
+  if (!isSupabaseConfigured || !supabase) return loadConfig();
+  try {
+    const { data, error } = await supabase
+      .from("felipe_alvim_config")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error || !data) {
+      console.warn("Could not fetch from Supabase, using local cache:", error);
+      return loadConfig();
+    }
+
+    const parsed: PlatformConfig = {
+      accessWebhookUrl: data.access_webhook_url ?? "",
+      adminWebhookUrl: data.admin_webhook_url ?? "",
+      adminPassword: data.admin_password ?? "felipe2026",
+      keyword: data.keyword ?? "",
+      whatsappNumber: data.whatsapp_number ?? "5561992939930",
+      offerHeadline: data.offer_headline ?? "Sua condição exclusiva foi liberada",
+      offerSubheadline: data.offer_subheadline ?? "Escolha o plano de acompanhamento ideal e garanta o desconto especial enquanto há vagas.",
+      totalSlots: data.total_slots ?? 10,
+      plans: Array.isArray(data.plans) ? data.plans : defaultConfig.plans,
+    };
+
+    // Sync into local backup
+    saveConfig(parsed);
+    return parsed;
+  } catch (err) {
+    console.error("Error fetching from Supabase:", err);
+    return loadConfig();
+  }
+}
+
+export async function saveConfigToSupabase(cfg: PlatformConfig): Promise<boolean> {
+  // Always save locally first as offline/session backup
+  saveConfig(cfg);
+  
+  if (!isSupabaseConfigured || !supabase) return true;
+  try {
+    const { error } = await supabase
+      .from("felipe_alvim_config")
+      .upsert({
+        id: 1,
+        access_webhook_url: cfg.accessWebhookUrl,
+        admin_webhook_url: cfg.adminWebhookUrl,
+        admin_password: cfg.adminPassword,
+        keyword: cfg.keyword,
+        whatsapp_number: cfg.whatsappNumber,
+        offer_headline: cfg.offerHeadline,
+        offer_subheadline: cfg.offerSubheadline,
+        total_slots: cfg.totalSlots,
+        plans: cfg.plans,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error("Error writing to Supabase:", error);
+      throw error;
+    }
+    return true;
+  } catch (err) {
+    console.error("Failed to write to Supabase:", err);
+    return false;
+  }
+}
+
 
 export type OfferAccess = { token: string; slotsRemaining?: number };
 

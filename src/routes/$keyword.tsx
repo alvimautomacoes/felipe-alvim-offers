@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { loadConfig, saveAccess } from "@/lib/platform-config";
+import { loadConfig, saveAccess, fetchConfigFromSupabase } from "@/lib/platform-config";
 import { Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/$keyword")({
@@ -31,8 +31,8 @@ function KeywordValidationPage() {
         return;
       }
 
-      const cfg = loadConfig();
       try {
+        const cfg = await fetchConfigFromSupabase();
         let ok = false;
         let token = "";
         let slotsRemaining: number | undefined;

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { loadConfig, saveAccess } from "@/lib/platform-config";
+import { loadConfig, saveAccess, fetchConfigFromSupabase } from "@/lib/platform-config";
 import { LockKeyhole, Sparkles, UserCheck } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -24,6 +24,7 @@ function EntryPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchConfigFromSupabase();
     const redirectErr = sessionStorage.getItem("fa_entry_error");
     if (redirectErr) {
       setError(redirectErr);
@@ -34,9 +35,9 @@ function EntryPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const cfg = loadConfig();
     setLoading(true);
     try {
+      const cfg = await fetchConfigFromSupabase();
       let ok = false;
       let token = "";
       let slotsRemaining: number | undefined;
