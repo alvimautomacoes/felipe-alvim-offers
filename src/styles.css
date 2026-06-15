@@ -29,7 +29,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --color-noir: var(--noir);
+  --color-noir-soft: var(--noir-soft);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", "Inter", serif;
 }
 
 :root {
@@ -53,8 +59,22 @@
   --border: oklch(0.92 0.01 150);
   --input: oklch(0.94 0.01 150);
   --ring: oklch(0.55 0.15 150);
+
+  /* High ticket noir + gold */
+  --noir: oklch(0.12 0.005 60);
+  --noir-soft: oklch(0.18 0.008 60);
+  --gold: oklch(0.78 0.13 85);
+  --gold-soft: oklch(0.88 0.09 88);
+  --gold-deep: oklch(0.55 0.12 75);
+
   --gradient-hero: linear-gradient(135deg, oklch(0.55 0.15 150) 0%, oklch(0.65 0.13 165) 100%);
+  --gradient-gold: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 45%, var(--gold-deep) 100%);
+  --gradient-noir: radial-gradient(at 20% 0%, oklch(0.22 0.02 70) 0%, transparent 50%),
+                   radial-gradient(at 80% 100%, oklch(0.2 0.04 70) 0%, transparent 55%),
+                   linear-gradient(180deg, var(--noir) 0%, oklch(0.08 0.005 60) 100%);
   --shadow-soft: 0 10px 40px -10px oklch(0.55 0.15 150 / 0.25);
+  --shadow-gold: 0 20px 60px -20px oklch(0.78 0.13 85 / 0.5);
+  --shadow-noir: 0 30px 80px -20px oklch(0 0 0 / 0.6);
 }
 
 @layer base {
@@ -65,4 +85,52 @@
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+@utility text-gold-gradient {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility shimmer-gold {
+  background: linear-gradient(
+    110deg,
+    var(--gold-deep) 0%,
+    var(--gold) 35%,
+    var(--gold-soft) 50%,
+    var(--gold) 65%,
+    var(--gold-deep) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 5s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50% { transform: translate(20px, -30px) scale(1.1); opacity: 0.7; }
+}
+
+@utility orb-float {
+  animation: float-orb 12s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
