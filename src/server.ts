@@ -11,9 +11,16 @@ let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+    serverEntryPromise = import("@tanstack/react-start/server-entry").then((m) => {
+      console.log("[server.ts] Imported server-entry:", {
+        hasDefault: !!m.default,
+        keys: Object.keys(m),
+        type: typeof m,
+      });
+      const entry = m.default ?? m;
+      console.log("[server.ts] Entry:", { hasEntry: !!entry, hasFetch: !!entry?.fetch });
+      return entry as ServerEntry;
+    });
   }
   return serverEntryPromise;
 }
@@ -41,10 +48,12 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
+      console.log("[server.ts] Calling handler.fetch:", { method: request.method, url: request.url });
       const response = await handler.fetch(request, env, ctx);
+      console.log("[server.ts] Got response:", { status: response.status });
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
-      console.error(error);
+      console.error("[server.ts] Error:", error);
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },
