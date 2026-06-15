@@ -8,7 +8,7 @@ import {
   type PlatformConfig,
 } from "@/lib/platform-config";
 import { LockKeyhole, Sparkles, UserCheck, Flame } from "lucide-react";
-import { Logo } from "@/components/BrandLogo";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
