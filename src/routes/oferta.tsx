@@ -11,7 +11,7 @@ import {
   type PlatformConfig,
 } from "@/lib/platform-config";
 
-import { Logo } from "../components/logo-component";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/oferta")({
   head: () => ({
