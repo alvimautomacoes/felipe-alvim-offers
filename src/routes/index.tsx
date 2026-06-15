@@ -51,7 +51,7 @@ function EntryPage() {
         const data = await res.json();
         ok = !!data?.ok;
         token = data?.token ?? "";
-        slotsRemaining = data?.slotsRemaining;
+        slotsRemaining = data?.slotsRemaining ?? data?.vagas ?? data?.slots;
       } else {
         // Fallback local: compara com a palavra-chave configurada
         ok = !!cfg.keyword && palavra.trim().toLowerCase() === cfg.keyword.trim().toLowerCase();
