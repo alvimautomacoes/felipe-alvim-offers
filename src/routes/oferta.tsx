@@ -153,8 +153,8 @@ function OfferPage() {
                   style={{ background: "var(--noir-soft)" }}
                 >
                   {plan.highlighted ? (
-                    <div className="absolute top-0 right-0 overflow-hidden w-28 h-28 pointer-events-none z-10">
-                      <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-600 to-amber-400 text-neutral-950 font-extrabold text-[9px] uppercase tracking-widest text-center py-2 w-[150%] translate-x-[32%] translate-y-[22%] rotate-45 shadow-[0_2px_8px_rgba(0,0,0,0.5)] border-y border-amber-300/30">
+                    <div className="absolute top-0 right-0 overflow-hidden w-36 h-36 pointer-events-none z-10">
+                      <div className="absolute -right-10 top-7 bg-gradient-to-r from-amber-600 to-amber-400 text-neutral-950 font-black text-[10px] uppercase tracking-widest text-center py-1.5 w-44 rotate-45 shadow-[0_4px_12px_rgba(0,0,0,0.6)] border-y border-amber-300/40 select-none">
                         {plan.badge || "Mais Vendido"}
                       </div>
                     </div>
@@ -323,4 +323,3 @@ function OfferPage() {
     </main>
   );
 }
-3.2
