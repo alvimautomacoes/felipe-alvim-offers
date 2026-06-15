@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loadConfig, saveAccess } from "@/lib/platform-config";
 import { LockKeyhole, Sparkles, UserCheck } from "lucide-react";
 
@@ -7,7 +7,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Acesso Exclusivo — Nutri Felipe Alvim" },
-      { name: "description", content: "Insira sua palavra-chave para acessar a oferta exclusiva do nutricionista Felipe Alvim." },
+      {
+        name: "description",
+        content:
+          "Insira sua palavra-chave para acessar a oferta exclusiva do nutricionista Felipe Alvim.",
+      },
     ],
   }),
   component: EntryPage,
@@ -18,6 +22,14 @@ function EntryPage() {
   const [palavra, setPalavra] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const redirectErr = sessionStorage.getItem("fa_entry_error");
+    if (redirectErr) {
+      setError(redirectErr);
+      sessionStorage.removeItem("fa_entry_error");
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +85,10 @@ function EntryPage() {
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-40 -right-20 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-20 orb-float"
-        style={{ background: "radial-gradient(circle, var(--gold-deep) 0%, transparent 70%)", animationDelay: "3s" }}
+        style={{
+          background: "radial-gradient(circle, var(--gold-deep) 0%, transparent 70%)",
+          animationDelay: "3s",
+        }}
       />
       {/* Grain overlay */}
       <div
@@ -88,41 +103,52 @@ function EntryPage() {
       <div className="relative w-full max-w-md z-10 animate-fade-up">
         {/* Header content with luxury vibes */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-5 border relative" 
-               style={{ 
-                 borderColor: "color-mix(in oklab, var(--gold) 40%, transparent)",
-                 background: "var(--noir-soft)",
-                 boxShadow: "var(--shadow-gold)"
-               }}>
+          <div
+            className="inline-flex h-16 w-16 items-center justify-center rounded-2xl mb-5 border relative"
+            style={{
+              borderColor: "color-mix(in oklab, var(--gold) 40%, transparent)",
+              background: "var(--noir-soft)",
+              boxShadow: "var(--shadow-gold)",
+            }}
+          >
             <LockKeyhole className="h-6 w-6 text-gold-soft" style={{ color: "var(--gold-soft)" }} />
-            <Sparkles className="h-4 w-4 absolute -top-1.5 -right-1.5 text-gold animate-pulse" style={{ color: "var(--gold)" }} />
+            <Sparkles
+              className="h-4 w-4 absolute -top-1.5 -right-1.5 text-gold animate-pulse"
+              style={{ color: "var(--gold)" }}
+            />
           </div>
-          
+
           <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-gold-gradient">
             Acesso Reservado
           </h1>
           <p className="mt-3 text-sm text-white/70 leading-relaxed max-w-sm mx-auto">
-            Insira o código secreto recebido na sua conversa privada para liberar seus benefícios de acompanhamento exclusivo.
+            Insira o código secreto recebido na sua conversa privada para liberar seus benefícios de
+            acompanhamento exclusivo.
           </p>
         </div>
 
         {/* Form Container */}
-        <div 
+        <div
           className="rounded-3xl p-px"
           style={{
-            background: "linear-gradient(180deg, color-mix(in oklab, var(--gold) 25%, transparent), color-mix(in oklab, var(--gold) 5%, transparent))",
-            boxShadow: "var(--shadow-noir)"
+            background:
+              "linear-gradient(180deg, color-mix(in oklab, var(--gold) 25%, transparent), color-mix(in oklab, var(--gold) 5%, transparent))",
+            boxShadow: "var(--shadow-noir)",
           }}
         >
-          <form 
-            onSubmit={handleSubmit} 
+          <form
+            onSubmit={handleSubmit}
             className="rounded-[calc(theme(borderRadius.3xl)-1px)] p-7 flex flex-col"
             style={{ background: "var(--noir-soft)" }}
           >
-            <label className="text-xs uppercase tracking-widest font-semibold mb-2.5 text-gold-soft" htmlFor="palavra" style={{ color: "var(--gold-soft)" }}>
+            <label
+              className="text-xs uppercase tracking-widest font-semibold mb-2.5 text-gold-soft"
+              htmlFor="palavra"
+              style={{ color: "var(--gold-soft)" }}
+            >
               Código de Acesso
             </label>
-            
+
             <div className="relative">
               <input
                 id="palavra"
@@ -166,9 +192,7 @@ function EntryPage() {
         </div>
 
         <div className="text-center mt-8 space-y-1">
-          <p className="text-xs text-white/40 tracking-wider">
-            Nutricionista Felipe Alvim
-          </p>
+          <p className="text-xs text-white/40 tracking-wider">Nutricionista Felipe Alvim</p>
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">
             Acompanhamento Nutricional Exclusivo
           </p>
@@ -177,4 +201,3 @@ function EntryPage() {
     </main>
   );
 }
-
