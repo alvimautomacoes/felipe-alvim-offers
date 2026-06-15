@@ -9,6 +9,7 @@ import {
   type Plan,
   type PlatformConfig,
 } from "@/lib/platform-config";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   Settings,
   ShieldAlert,
@@ -53,14 +54,30 @@ function AdminPage() {
     }
   }, []);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    const current = loadConfig();
-    if (password === current.adminPassword) {
-      sessionStorage.setItem("fa_admin_ok", "1");
-      setAuthed(true);
-    } else {
-      setAuthError("Senha incorreta");
+    setAuthError(null);
+    setSending(true);
+    try {
+      // Sync real-time config from Supabase to prevent lockout if password changed elsewhere
+      const current = await fetchConfigFromSupabase();
+      if (password === current.adminPassword) {
+        sessionStorage.setItem("fa_admin_ok", "1");
+        setAuthed(true);
+      } else {
+        setAuthError("Senha incorreta");
+      }
+    } catch {
+      // Fallback offline / local state login if no internet/Supabase is configure
+      const current = loadConfig();
+      if (password === current.adminPassword) {
+        sessionStorage.setItem("fa_admin_ok", "1");
+        setAuthed(true);
+      } else {
+        setAuthError("Senha incorreta");
+      }
+    } finally {
+      setSending(false);
     }
   }
 
@@ -71,23 +88,28 @@ function AdminPage() {
     setSending(true);
 
     try {
-      const savedToSupabase = await saveConfigToSupabase(cfg);
+      const res = await saveConfigToSupabase(cfg);
 
       if (cfg.adminWebhookUrl) {
-        await fetch(cfg.adminWebhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cfg),
-        });
+        try {
+          await fetch(cfg.adminWebhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cfg),
+          });
+        } catch (webhookErr) {
+          console.error("Failed to notify webhook:", webhookErr);
+        }
       }
 
-      if (savedToSupabase) {
+      if (res.success) {
         setStatus("Configurações salvas no Supabase com sucesso!");
       } else {
-        setStatus("Configurações salvas localmente, mas falhou ao sincronizar com o Supabase.");
+        setStatus(`Ops! Salvo localmente, mas falhou ao enviar para o Supabase: ${res.error}`);
       }
-    } catch {
-      setStatus("Salvo localmente, mas falhou ao sincronizar ou notificar o webhook.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setStatus(`Erro ao salvar: ${msg}`);
     } finally {
       setSending(false);
     }
@@ -258,9 +280,27 @@ function AdminPage() {
               <h1 className="text-2xl font-bold font-display tracking-tight text-gold-gradient">
                 Painel de Controle
               </h1>
-              <p className="text-xs text-white/50">
-                Personalize ofertas, chaves e webhooks para o Instagram
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="text-sm text-white/50">
+                  Personalize ofertas, chaves e webhooks para o Instagram
+                </span>
+                <span
+                  className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full inline-flex items-center gap-1.5 bg-black/40 border"
+                  style={{
+                    borderColor: isSupabaseConfigured
+                      ? "rgba(16, 185, 129, 0.3)"
+                      : "rgba(245, 158, 11, 0.3)",
+                    color: isSupabaseConfigured ? "#10b981" : "#f59e0b",
+                  }}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      isSupabaseConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                    }`}
+                  />
+                  {isSupabaseConfigured ? "Supabase Ativo" : "Apenas Local"}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -435,6 +475,30 @@ function AdminPage() {
                         style={{ borderColor: "color-mix(in oklab, var(--gold) 15%, transparent)" }}
                       />
                     </Field>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 pt-1 pb-2">
+                    <input
+                      type="checkbox"
+                      id={`highlighted-${plan.id}-${i}`}
+                      checked={plan.highlighted ?? false}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        const plans = cfg.plans.map((p, idx) => {
+                          if (idx === i) return { ...p, highlighted: isChecked };
+                          if (isChecked) return { ...p, highlighted: false };
+                          return p;
+                        });
+                        setCfg({ ...cfg, plans });
+                      }}
+                      className="h-4 w-4 rounded border-amber-500/30 bg-black/50 text-amber-500 focus:ring-amber-500/50 cursor-pointer accent-amber-500"
+                    />
+                    <label
+                      htmlFor={`highlighted-${plan.id}-${i}`}
+                      className="text-xs uppercase tracking-wider text-amber-400 font-semibold cursor-pointer select-none"
+                    >
+                      Destacar este plano (Cartão Dourado & Efeito de Brilho)
+                    </label>
                   </div>
 
                   <Field label="Descrição Curta">

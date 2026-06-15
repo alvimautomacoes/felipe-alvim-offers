@@ -56,6 +56,8 @@ function OfferPage() {
 
   const featured = useMemo(() => {
     if (!cfg) return null;
+    const found = cfg.plans.find((p) => p.highlighted);
+    if (found) return found;
     return cfg.plans[Math.min(1, cfg.plans.length - 1)];
   }, [cfg]);
 
