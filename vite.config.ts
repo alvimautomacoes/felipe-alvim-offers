@@ -17,5 +17,8 @@ export default defineConfig({
   },
   nitro: {
     preset: "node-server",
+    experimental: {
+      asyncContext: true,
+    },
   },
 });
