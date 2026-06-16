@@ -15,29 +15,34 @@ import { Sparkles, ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    question: "Como funciona o desconto?",
+    question: "Como funciona o desconto especial?",
     answer:
-      "O desconto funciona de acordo com o plano escolhido e no valor mostrado na oferta. Cada plano tem sua própria política de parcelamento.",
+      "As condições especiais apresentadas nesta página são aplicadas diretamente sobre o valor oficial de cada plano. O valor promocional exibido é exclusivo para esta campanha e você poderá consultar as facilidades de parcelamento diretamente ao selecionar a opção que melhor se alinha aos seus objetivos.",
   },
   {
-    question: "Entrei mas não fechei, agora não tem mais?",
+    question: "Iniciei o contato mas não concluí a adesão. Minha vaga fica garantida?",
     answer:
-      "O simples envio de mensagem no WhatsApp não garante o desconto. O desconto será exclusivamente para quem entrar e enviar a mensagem pela plataforma. O número de vagas está disponível na plataforma e será computada por fechamento. Então se você entrar e não fechar, pode acontecer das vagas se esgotarem e o desconto não estar mais disponível.",
+      "A reserva da vaga é consolidada mediante a confirmação da sua inscrição e início do acompanhamento. Como as vagas são limitadas para manter a qualidade individual do atendimento, o início da conversa no WhatsApp assegura prioridade no contato, mas não garante a vaga caso as opções se esgotem antes da finalização. Recomendamos concluir o processo o quanto antes.",
   },
   {
-    question: "Qual a validade do plano?",
+    question: "Qual é a duração e validade do acompanhamento?",
     answer:
-      "A validade do plano varia de acordo com o plano escolhido e segue a mesma política dos planos sem o desconto.",
+      "Cada plano possui um período de vigência específico, planejado com precisão para o seu tipo de meta e objetivo. Esta duração segue o mesmo padrão premium das nossas consultorias regulares, assegurando a profundidade necessária para a entrega de resultados consistentes.",
   },
   {
-    question: "Qual a validade da oferta?",
+    question: "Até quando esta oferta especial ficará disponível?",
     answer:
-      "A oferta não tem validade definida, ficando totalmente a critério do Felipe encerrar a qualquer momento ou ao preencher as vagas.",
+      "Esta campanha de condições especiais possui caráter temporário e exclusivo. Ela poderá ser encerrada a qualquer momento, sem aviso prévio, conforme o preenchimento de todas as vagas disponíveis ou de acordo com a disponibilidade de agenda do Nutricionista Felipe Alvim.",
   },
   {
-    question: "Como é feito o suporte e acompanhamento?",
+    question: "Como é estruturado o suporte e acompanhamento?",
     answer:
-      "Todo o acompanhamento é feito individualmente diretamente pelo Felipe Alvim. Você terá metas personalizadas e suporte exclusivo via WhatsApp para tirar qualquer dúvida e manter a consistência no seu objetivo.",
+      "Você contará com contato direto e individualizado com o Felipe Alvim. Todo o suporte é realizado via WhatsApp para garantir uma comunicação ágil e humana, onde ajustaremos suas metas personalizadas, avaliaremos sua evolução e tiraremos qualquer dúvida para mantê-lo focado em seus resultados.",
+  },
+  {
+    question: "Quem pode aproveitar a oferta e qual o prazo para início?",
+    answer:
+      "A oferta é 100% válida tanto para novos pacientes quanto para pacientes ativos. Contudo, como requisito indispensável para validar a condição especial, a primeira consulta do plano contratado deve ser, obrigatoriamente, realizada nos 10 dias subsequentes à contratação.",
   },
 ];
 
