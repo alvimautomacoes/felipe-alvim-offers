@@ -20,6 +20,7 @@ import {
   Save,
   Sparkles,
   LogOut,
+  Eye,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -365,7 +366,14 @@ function AdminPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <Link
+              to="/oferta"
+              className="px-3.5 py-2 rounded-xl border text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 transition-colors border-amber-500/20 text-brand-gold text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Ver Ofertas
+            </Link>
             <button
               type="button"
               onClick={resetDefaults}

@@ -33,9 +33,16 @@ function OfferPage() {
   const [selected, setSelected] = useState<Plan | null>(null);
   const [nome, setNome] = useState("");
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
+    const adminSessionActive = typeof window !== "undefined" && sessionStorage.getItem("fa_admin_ok") === "1";
+    if (adminSessionActive) {
+      setIsAdmin(true);
+    }
+
     const access = loadAccess();
-    if (!access?.token) {
+    if (!access?.token && !adminSessionActive) {
       navigate({ to: "/" });
       return;
     }
@@ -78,6 +85,25 @@ function OfferPage() {
       className="min-h-screen relative overflow-hidden text-white"
       style={{ background: "var(--gradient-noir)" }}
     >
+      {isAdmin && (
+        <div className="bg-amber-950/40 border-b border-amber-500/20 backdrop-blur-md px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs z-30 relative">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="font-semibold text-amber-300">Modo de Pré-visualização do Administrador</span>
+            <span className="text-white/40 hidden sm:inline">|</span>
+            <span className="text-white/60 hidden sm:inline">
+              Navegação liberada sem consumo de cupons.
+            </span>
+          </div>
+          <button
+            onClick={() => navigate({ to: "/admin" })}
+            className="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Voltar ao Painel
+          </button>
+        </div>
+      )}
+
       {/* Decorative gold orbs */}
       <div
         aria-hidden

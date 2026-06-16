@@ -169,11 +169,11 @@ function EntryPage() {
                   <span className="text-gold font-bold text-lg px-0.5 animate-pulse">
                     {slots} {slots === 1 ? "vaga" : "vagas"}
                   </span>{" "}
-                  disponíveis esta semana!
+                  disponíveis nesta campanha!
                 </>
               ) : (
                 <span className="text-rose-400 font-bold">
-                  Vagas esgotadas para esta semana! Fila de espera ativa.
+                  Vagas esgotadas para esta campanha! Fila de espera ativa.
                 </span>
               )}
             </p>
