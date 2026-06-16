@@ -124,7 +124,7 @@ function OfferPage() {
                 : "vagas esgotadas"
               : "vagas limitadas"}
           </div>
-          <h1 className="font-display mt-6 text-4xl md:text-6xl font-semibold leading-[1.05]">
+          <h1 className="font-display mt-6 text-3xl sm:text-4xl md:text-6xl font-semibold leading-[1.05]">
             <span className="text-gold-gradient">{cfg.offerHeadline}</span>
           </h1>
           <p className="mt-5 text-base md:text-lg text-white/70 leading-relaxed">

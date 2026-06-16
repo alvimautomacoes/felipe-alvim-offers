@@ -9,7 +9,7 @@ import {
   type Plan,
   type PlatformConfig,
 } from "@/lib/platform-config";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   Settings,
   ShieldAlert,
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const [authed, setAuthed] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [cfg, setCfg] = useState<PlatformConfig | null>(null);
@@ -43,11 +44,24 @@ function AdminPage() {
   useEffect(() => {
     setCfg(loadConfig());
 
-    async function syncFromDb() {
+    async function checkUserAndSync() {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user) {
+            setAuthed(true);
+            sessionStorage.setItem("fa_admin_ok", "1");
+          }
+        } catch (err) {
+          console.error("Error verifying active auth session:", err);
+        }
+      }
       const dbConfig = await fetchConfigFromSupabase();
       setCfg(dbConfig);
     }
-    syncFromDb();
+    checkUserAndSync();
 
     if (typeof window !== "undefined" && sessionStorage.getItem("fa_admin_ok") === "1") {
       setAuthed(true);
@@ -59,23 +73,39 @@ function AdminPage() {
     setAuthError(null);
     setSending(true);
     try {
-      // Sync real-time config from Supabase to prevent lockout if password changed elsewhere
+      // 1. If user typed an email and Supabase is configured, use secure Supabase Auth!
+      if (isSupabaseConfigured && supabase && email.trim().includes("@")) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password,
+        });
+        if (error) {
+          throw new Error(error.message);
+        }
+        if (data?.user) {
+          sessionStorage.setItem("fa_admin_ok", "1");
+          setAuthed(true);
+          const current = await fetchConfigFromSupabase();
+          setCfg(current);
+          return;
+        }
+      }
+
+      // 2. Fallback check: matching the adminPassword field (Local/Legacy support)
       const current = await fetchConfigFromSupabase();
       if (password === current.adminPassword) {
         sessionStorage.setItem("fa_admin_ok", "1");
         setAuthed(true);
       } else {
-        setAuthError("Senha incorreta");
+        setAuthError(
+          email.trim().includes("@")
+            ? "Erro de autenticação no Supabase ou usuário não encontrado."
+            : "Senha incorreta",
+        );
       }
-    } catch {
-      // Fallback offline / local state login if no internet/Supabase is configure
-      const current = loadConfig();
-      if (password === current.adminPassword) {
-        sessionStorage.setItem("fa_admin_ok", "1");
-        setAuthed(true);
-      } else {
-        setAuthError("Senha incorreta");
-      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setAuthError(`Falha na identificação: ${msg}`);
     } finally {
       setSending(false);
     }
@@ -154,16 +184,24 @@ function AdminPage() {
     setStatus("Configurações originais restauradas.");
   }
 
-  function handleLogout() {
+  async function handleLogout() {
     sessionStorage.removeItem("fa_admin_ok");
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error("Error signing out:", err);
+      }
+    }
     setAuthed(false);
     setPassword("");
+    setEmail("");
   }
 
   if (!authed) {
     return (
       <main
-        className="min-h-screen relative overflow-hidden flex items-center justify-center px-5 py-10 text-white"
+        className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-10 text-white"
         style={{ background: "var(--gradient-noir)" }}
       >
         {/* Decorative gold orbs */}
@@ -192,7 +230,7 @@ function AdminPage() {
           >
             <form
               onSubmit={handleLogin}
-              className="rounded-[calc(theme(borderRadius.3xl)-1px)] p-8 flex flex-col"
+              className="rounded-[calc(theme(borderRadius.3xl)-1px)] p-6 sm:p-8 flex flex-col"
               style={{ background: "var(--noir-soft)" }}
             >
               <div className="flex items-center gap-3 mb-6">
@@ -206,6 +244,30 @@ function AdminPage() {
               </div>
 
               <div className="space-y-4">
+                {isSupabaseConfigured && (
+                  <div>
+                    <label
+                      className="block text-xs uppercase tracking-wider text-gold-soft font-semibold mb-2"
+                      style={{ color: "var(--gold-soft)" }}
+                    >
+                      E-mail do Administrador
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="seu-email@exemplo.com"
+                      className="w-full px-4 py-3.5 rounded-xl bg-black/40 border text-base text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all font-sans"
+                      style={{ borderColor: "color-mix(in oklab, var(--gold) 25%, transparent)" }}
+                    />
+                    <span className="block text-[10px] text-white/40 mt-1.5 leading-relaxed">
+                      {
+                        "Deixe o e-mail em branco se quiser efetuar login usando apenas a senha padrão de contingência."
+                      }
+                    </span>
+                  </div>
+                )}
+
                 <div>
                   <label
                     className="block text-xs uppercase tracking-wider text-gold-soft font-semibold mb-2"
@@ -219,7 +281,7 @@ function AdminPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3.5 rounded-xl bg-black/40 border text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all font-mono"
+                      className="w-full px-4 py-3.5 rounded-xl bg-black/40 border text-base text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all font-mono"
                       style={{ borderColor: "color-mix(in oklab, var(--gold) 25%, transparent)" }}
                       required
                     />
@@ -619,7 +681,7 @@ function AdminPage() {
 }
 
 const inputCls =
-  "w-full mt-1 px-4 py-2.5 rounded-xl bg-black/45 border text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all";
+  "w-full mt-1 px-4 py-2.5 rounded-xl bg-black/45 border text-base md:text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all";
 
 function Card({
   title,
