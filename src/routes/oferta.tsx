@@ -11,7 +11,35 @@ import {
   type PlatformConfig,
 } from "@/lib/platform-config";
 
-import { Sparkles } from "lucide-react";
+import { Sparkles, ChevronDown } from "lucide-react";
+
+const faqs = [
+  {
+    question: "Como funciona o desconto?",
+    answer:
+      "O desconto funciona de acordo com o plano escolhido e no valor mostrado na oferta. Cada plano tem sua própria política de parcelamento.",
+  },
+  {
+    question: "Entrei mas não fechei, agora não tem mais?",
+    answer:
+      "O simples envio de mensagem no WhatsApp não garante o desconto. O desconto será exclusivamente para quem entrar e enviar a mensagem pela plataforma. O número de vagas está disponível na plataforma e será computada por fechamento. Então se você entrar e não fechar, pode acontecer das vagas se esgotarem e o desconto não estar mais disponível.",
+  },
+  {
+    question: "Qual a validade do plano?",
+    answer:
+      "A validade do plano varia de acordo com o plano escolhido e segue a mesma política dos planos sem o desconto.",
+  },
+  {
+    question: "Qual a validade da oferta?",
+    answer:
+      "A oferta não tem validade definida, ficando totalmente a critério do Felipe encerrar a qualquer momento ou ao preencher as vagas.",
+  },
+  {
+    question: "Como é feito o suporte e acompanhamento?",
+    answer:
+      "Todo o acompanhamento é feito individualmente diretamente pelo Felipe Alvim. Você terá metas personalizadas e suporte exclusivo via WhatsApp para tirar qualquer dúvida e manter a consistência no seu objetivo.",
+  },
+];
 
 export const Route = createFileRoute("/oferta")({
   head: () => ({
@@ -32,11 +60,13 @@ function OfferPage() {
   const [slots, setSlots] = useState<number | undefined>(undefined);
   const [selected, setSelected] = useState<Plan | null>(null);
   const [nome, setNome] = useState("");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const adminSessionActive = typeof window !== "undefined" && sessionStorage.getItem("fa_admin_ok") === "1";
+    const adminSessionActive =
+      typeof window !== "undefined" && sessionStorage.getItem("fa_admin_ok") === "1";
     if (adminSessionActive) {
       setIsAdmin(true);
     }
@@ -89,7 +119,9 @@ function OfferPage() {
         <div className="bg-amber-950/40 border-b border-amber-500/20 backdrop-blur-md px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs z-30 relative">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-            <span className="font-semibold text-amber-300">Modo de Pré-visualização do Administrador</span>
+            <span className="font-semibold text-amber-300">
+              Modo de Pré-visualização do Administrador
+            </span>
             <span className="text-white/40 hidden sm:inline">|</span>
             <span className="text-white/60 hidden sm:inline">
               Navegação liberada sem consumo de cupons.
@@ -264,7 +296,65 @@ function OfferPage() {
           })}
         </section>
 
-        <footer className="mt-16 text-center text-xs text-white/40">
+        {/* FAQ Section */}
+        <section className="mt-24 max-w-3xl mx-auto px-1 animate-fade-up">
+          <div className="text-center mb-10">
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-white">
+              Dúvidas Frequentes
+            </h2>
+            <p className="mt-2 text-sm text-white/60">
+              {
+                "Esclareça suas principais dúvidas sobre os planos de acompanhamento e o desconto especial."
+              }
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl border transition-all duration-300 overflow-hidden"
+                  style={{
+                    background: "var(--noir-soft)",
+                    borderColor: isOpen
+                      ? "color-mix(in oklab, var(--gold) 40%, transparent)"
+                      : "color-mix(in oklab, var(--gold) 10%, transparent)",
+                    boxShadow: isOpen ? "0 4px 20px -5px rgba(245, 158, 11, 0.15)" : "none",
+                  }}
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full px-5 py-4.5 sm:px-6 sm:py-5 flex items-center justify-between text-left gap-4 cursor-pointer select-none transition-colors duration-200 hover:text-amber-400 group focus:outline-none"
+                  >
+                    <span className="font-medium text-sm sm:text-base text-white group-hover:text-amber-300 transition-colors">
+                      {faq.question}
+                    </span>
+                    <ChevronDown
+                      className={`h-4 w-4 sm:h-5 sm:w-5 text-amber-400 shrink-0 transition-transform duration-300 ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`transition-all duration-300 ease-in-out opacity-0 ${
+                      isOpen
+                        ? "max-h-[300px] border-t border-white/5 opacity-100"
+                        : "max-h-0 invisible"
+                    }`}
+                  >
+                    <div className="p-5 sm:p-6 text-xs sm:text-sm text-white/70 leading-relaxed bg-black/15">
+                      {faq.answer}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <footer className="mt-24 text-center text-xs text-white/40">
           Nutricionista Felipe Alvim ·{" "}
           <button
             onClick={() => {
